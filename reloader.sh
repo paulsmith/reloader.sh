@@ -21,6 +21,8 @@
 # reloader.sh does have one 3rd-party depedency other than bash 4.x, which is
 # [fswatch][fswatch]. fswatch is a filesytem event notification utility that
 # abstracts the differences between various operating system event mechanisms.
+#
+# [fswatch]: https://emcrisostomo.github.io/fswatch/
 
 set -euo pipefail
 
@@ -39,6 +41,16 @@ usage() {
 	echo "usage: $progname [-d dir] [-e exclude] firstcmd [nextcmd]" 1>&2
 	exit 1
 }
+
+if [ -t 1 -a -n "$(tput colors)" ]; then
+	yellow="\e[33m"
+	green="\e[32m"
+	reset="\e[0m"
+else
+	yellow=""
+	green=""
+	reset=""
+fi
 
 # configurable options, mainly to pass options to fswatch
 directories=()
@@ -71,7 +83,7 @@ if [ $# -ge 1 ]; then
 	shift
 fi
 if [ $# -ge 1 ]; then
-	echo "WARNING: extra unprocessed arguments passed in: $*" 1>&2
+	echo -e "${yellow}WARNING: extra unprocessed arguments passed in: $*${reset}" 1>&2
 fi
 
 # set defaults
@@ -104,6 +116,6 @@ fi
 # shellcheck disable=SC2046,SC2086
 fswatch -1 -r -l 0.25 $(printf -- "--event=%s " "${events[@]}") $exclude_opt $(printf -- "%s " "${directories[@]}") >/dev/null
 # shellcheck disable=SC1117
-[ -t 1 ] && [ -n "$(tput colors)" ] && echo -e "\e[33mReloading\e[0m" || echo "Reloading"
+echo -e "${green}▒ Reloading${reset}"
 shutdownall "$serverpid"
 exec "$0" "${origargs[@]}"
