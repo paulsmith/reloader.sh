@@ -23,6 +23,17 @@
 # abstracts the differences between various operating system event mechanisms.
 #
 # [fswatch]: https://emcrisostomo.github.io/fswatch/
+#
+# Design goals
+# ------------
+#
+#   * Simple operation
+#
+#   * Correctness - the tool should do the right thing with regard to shutting
+#     down cleanly (i.e., stop all descendent processes that are created by the
+#     main commands), and handle signals correctly (i.e., use Ctrl-C/SIGINT to
+#     stop the reloader and propagate that signal correctly to the other
+#     processes and controlling shell; similar correct SIGTERM behavior).
 
 set -euo pipefail
 
@@ -42,10 +53,10 @@ usage() {
 	exit 1
 }
 
-if [ -t 1 -a -n "$(tput colors)" ]; then
-	yellow="\e[33m"
-	green="\e[32m"
-	reset="\e[0m"
+if [ -t 1 ] && [ -n "$(tput colors)" ]; then
+	yellow="\\e[33m"
+	green="\\e[32m"
+	reset="\\e[0m"
 else
 	yellow=""
 	green=""
@@ -57,7 +68,7 @@ directories=()
 excludes=()
 
 # parse cli flags
-while getopts "d:e:" arg; do
+while getopts "d:e:h" arg; do
 	case $arg in
 		d) directories+=("$OPTARG")
 			;;
@@ -89,21 +100,26 @@ fi
 # set defaults
 [ ${#directories[@]} -eq 0 ] && directories+=(".")
 
-shutdownall() {
-	local pid="$1"
-	for cpid in $(ps -o pid= --ppid "$pid"); do kill "$cpid"; done
-	kill "$pid"
-	wait
-}
+# the pid of the main long-running process in the background, which will have
+# its own process group (by turning on job control (set -m) just before
+# invoking the command). the pid will be used to kill the process group when
+# either triggered to restart or on overall script shutdown.
+bgpid=
 
-# cleanup on exit or script shutdown by user
-trap 'shutdownall $serverpid 2>/dev/null' SIGTERM EXIT
-trap 'exit' SIGINT
+killprocgroup() {
+	kill -- -"$bgpid" # signal the process group
+	wait
+	bgpid=
+}
 
 # execute the build and/or run server commands
 [ -n "$buildcmd" ] && $buildcmd
+set -m
+trap '[ -n "$bgpid" ] && killprocgroup $bgpid' EXIT
+trap 'trap - INT; kill -s INT "$$"' INT
 $runcmd &
-serverpid=$!
+bgpid=$!
+set +m
 
 # main reloading logic - on any detected file change, kill the server process
 # and any children of its process group, and re-exec this script with the same
@@ -114,8 +130,11 @@ if [ ${#excludes[@]} -gt 0 ]; then
 	exclude_opt=$(printf -- "--exclude %s " "${excludes[@]}")
 fi
 # shellcheck disable=SC2046,SC2086
-fswatch -1 -r -l 0.25 $(printf -- "--event=%s " "${events[@]}") $exclude_opt $(printf -- "%s " "${directories[@]}") >/dev/null
-# shellcheck disable=SC1117
-echo -e "${green}▒ Reloading${reset}"
-shutdownall "$serverpid"
+fswatch -1 -r -l 0.25 $(printf -- "--event=%s " "${events[@]}") $exclude_opt $(printf -- "%s " "${directories[@]}") >/dev/null &
+trap 'trap - TERM; kill "$fwpid"; wait "$fwpid"' TERM
+fwpid=$!
+wait "$fwpid"
+echo -e "${green}▒ File change detecting, shutting down${reset}" >&2
+killprocgroup "$bgpid"
+echo -e "${green}▒ Reloading${reset}" >&2
 exec "$0" "${origargs[@]}"
