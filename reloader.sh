@@ -114,12 +114,12 @@ killprocgroup() {
 
 # execute the build and/or run server commands
 [ -n "$buildcmd" ] && $buildcmd
-set -m
-trap '[ -n "$bgpid" ] && killprocgroup $bgpid' EXIT
+set -m # turn on job control to get a new process group ID
+trap '[ -n "$bgpid" ] && killprocgroup "$bgpid"' EXIT
 trap 'trap - INT; kill -s INT "$$"' INT
 $runcmd &
 bgpid=$!
-set +m
+set +m # turn off job control
 
 # main reloading logic - on any detected file change, kill the server process
 # and any children of its process group, and re-exec this script with the same
