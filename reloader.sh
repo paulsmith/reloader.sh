@@ -36,6 +36,7 @@
 #     processes and controlling shell; similar correct SIGTERM behavior).
 
 set -euo pipefail
+#set -x
 
 progname=$(basename "$0")
 
@@ -54,10 +55,12 @@ usage() {
 }
 
 if [ -t 1 ] && [ -n "$(tput colors)" ]; then
-	yellow="\\e[33m"
-	green="\\e[32m"
+	blue="\\e[1;34m"
+	yellow="\\e[1;33m"
+	green="\\e[1;32m"
 	reset="\\e[0m"
 else
+	blue=""
 	yellow=""
 	green=""
 	reset=""
@@ -116,7 +119,7 @@ killprocgroup() {
 [ -n "$buildcmd" ] && $buildcmd
 set -m # turn on job control to get a new process group ID
 trap '[ -n "$bgpid" ] && killprocgroup "$bgpid"' EXIT
-trap 'trap - INT; kill -s INT "$$"' INT
+trap 'echo -e "${blue}░▒ Caught interrupt, shutting down${reset}"; trap - INT; kill -s INT "$$"' INT
 $runcmd &
 bgpid=$!
 set +m # turn off job control
@@ -134,7 +137,7 @@ fswatch -1 -r -l 0.25 $(printf -- "--event=%s " "${events[@]}") $exclude_opt $(p
 trap 'trap - TERM; kill "$fwpid"; wait "$fwpid"' TERM
 fwpid=$!
 wait "$fwpid"
-echo -e "${green}▒ File change detecting, shutting down${reset}" >&2
+echo "wait exit status $?"
+echo -e "${green}░▒ File change detected, reloading${reset}" >&2
 killprocgroup "$bgpid"
-echo -e "${green}▒ Reloading${reset}" >&2
 exec "$0" "${origargs[@]}"
