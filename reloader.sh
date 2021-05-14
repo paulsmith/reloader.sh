@@ -36,7 +36,7 @@
 #     processes and controlling shell; similar correct SIGTERM behavior).
 
 set -euo pipefail
-#set -x
+set -x
 
 progname=$(basename "$0")
 
@@ -110,7 +110,7 @@ fi
 bgpid=
 
 killprocgroup() {
-	kill -- -"$bgpid" # signal the process group
+	kill -- -"$bgpid" 2>/dev/null || true # signal the process group
 	wait
 	bgpid=
 }
@@ -133,11 +133,10 @@ if [ ${#excludes[@]} -gt 0 ]; then
 	exclude_opt=$(printf -- "--exclude %s " "${excludes[@]}")
 fi
 # shellcheck disable=SC2046,SC2086
-fswatch -1 -r -l 0.25 $(printf -- "--event=%s " "${events[@]}") $exclude_opt $(printf -- "%s " "${directories[@]}") >/dev/null &
+fswatch -1 -r -l 0.5 $(printf -- "--event=%s " "${events[@]}") $exclude_opt $(printf -- "%s " "${directories[@]}") & # >/dev/null &
 trap 'trap - TERM; kill "$fwpid"; wait "$fwpid"' TERM
 fwpid=$!
 wait "$fwpid"
-echo "wait exit status $?"
 echo -e "${green}░▒ File change detected, reloading${reset}" >&2
 killprocgroup "$bgpid"
 exec "$0" "${origargs[@]}"
