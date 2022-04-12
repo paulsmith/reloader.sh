@@ -1,7 +1,13 @@
 Usage:
 
-  $ reloader.sh [-e pat] [-d dir] [-h] buildcmd [execcmd]
+  $ reloader.sh [-e pat] [-d dir] [-h] buildcmd [runcmd]
   
+By default it watches for file system events in the current working
+directory. `buildcmd` is the command you want to run (i.e., re-run) each time
+a change is detected. `runcmd` is an optional second command to run after the
+`buildcmd` completes successfully, for example, compiling a binary and then
+running it as a server process.
+
 Options:
 
   -e pat        exclude path matching this regex pattern from watch detection
