@@ -36,7 +36,6 @@
 #     processes and controlling shell; similar correct SIGTERM behavior).
 
 set -euo pipefail
-#set -x
 
 progname=$(basename "$0")
 
