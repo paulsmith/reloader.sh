@@ -8,22 +8,28 @@ Options:
   -d dir        watch this directory only
  
 Options -e and -d can be given multiple times.
+
+Installation:
+
+Copy it to your $PATH. The file change monitor fswatch[1] is a dependency.
   
 Examples:
 
-Go:
+  Go:
 
-  $ reloader.sh "go run main.go"
-  $ reloader.sh -e .git "go run main.go"
-  $ reloader.sh "go build -o app ." ./app
+    $ reloader.sh "go run main.go"
+    $ reloader.sh -e .git "go run main.go"
+    $ reloader.sh "go build -o app ." ./app
 
-Rust:
+  Rust:
 
-  $ reloader.sh "cargo run"
-  $ reloader.sh "cargo build" ./target/debug/hello
-  $ reloader.sh -d src "cargo run"
+    $ reloader.sh "cargo run"
+    $ reloader.sh "cargo build" ./target/debug/hello
+    $ reloader.sh -d src "cargo run"
 
-Zig:
+  Zig:
 
-  $ reloader.sh "zig build-exe hello.zig" ./hello
-  $ reloader.sh -d src "zig build run"
+    $ reloader.sh "zig build-exe hello.zig" ./hello
+    $ reloader.sh -d src "zig build run"
+
+[1]: https://emcrisostomo.github.io/fswatch/
