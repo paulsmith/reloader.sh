@@ -36,7 +36,7 @@
 #     processes and controlling shell; similar correct SIGTERM behavior).
 
 set -euo pipefail
-set -x
+#set -x
 
 progname=$(basename "$0")
 
@@ -55,10 +55,10 @@ usage() {
 }
 
 if [ -t 1 ] && [ -n "$(tput colors)" ]; then
-	blue="\\e[1;34m"
-	yellow="\\e[1;33m"
-	green="\\e[1;32m"
-	reset="\\e[0m"
+	blue="\x1b[1;34m"
+	yellow="\x1b[1;33m"
+	green="\x1b[1;32m"
+	reset="\x1b[0m"
 else
 	blue=""
 	yellow=""
