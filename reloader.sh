@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# SPDX short identifier: MIT
+# Copyright 2022 Paul Smith <paulsmith@gmail.com>
 # 
 # reloader.sh - automatically trigger a reload of a build/server process when a
 # file change is detected.
