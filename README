@@ -2,6 +2,13 @@ Usage:
 
   $ reloader.sh [-e pat] [-d dir] [-h] buildcmd [execcmd]
   
+Options:
+
+  -e pat        exclude path matching this regex pattern from watch detection
+  -d dir        watch this directory only
+ 
+Options -e and -d can be given multiple times.
+  
 Examples:
 
 Go:
