@@ -1,0 +1,22 @@
+Usage:
+
+  $ reloader.sh [-e pat] [-d dir] [-h] buildcmd [execcmd]
+  
+Examples:
+
+Go:
+
+  $ reloader.sh "go run main.go"
+  $ reloader.sh -e .git "go run main.go"
+  $ reloader.sh "go build -o app ." ./app
+
+Rust:
+
+  $ reloader.sh "cargo run"
+  $ reloader.sh "cargo build" ./target/debug/hello
+  $ reloader.sh -d src "cargo run"
+
+Zig:
+
+  $ reloader.sh "zig build-exe hello.zig" ./hello
+  $ reloader.sh -d src "zig build run"
