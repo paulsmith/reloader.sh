@@ -7,7 +7,7 @@
       flake-utils.lib.eachDefaultSystem (system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          my-name = "reloader";
+          my-name = "reloader.sh";
           my-build-inputs = with pkgs; [ fswatch ];
           my-src = builtins.readFile ./reloader.sh;
           my-script = (pkgs.writeShellScriptBin my-name my-src).overrideAttrs(old: {

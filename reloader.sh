@@ -40,7 +40,7 @@
 
 set -euo pipefail
 
-progname=$(basename "$0")
+progname=reloader.sh
 
 # check for fswatch dependency
 if ! command -v fswatch >/dev/null 2>&1; then
