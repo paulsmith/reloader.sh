@@ -121,7 +121,7 @@ killprocgroup() {
 [ -n "$buildcmd" ] && $buildcmd
 set -m # turn on job control to get a new process group ID
 trap '[ -n "$bgpid" ] && killprocgroup "$bgpid"' EXIT
-trap 'echo -e "${blue}░▒ Caught interrupt, shutting down${reset}"; trap - INT; kill -s INT "$$"' INT
+trap 'echo -e "${blue}░▒ Caught interrupt, shutting down${reset}"; trap - INT; kill -s INT -"$bgpid"; wait' INT
 $runcmd &
 bgpid=$!
 set +m # turn off job control
